@@ -37,7 +37,17 @@ def assign_topics(model, dictionary, data):
     scores = []
     
     ####### PART A #######
-    
+    for index, row in data.iterrows():
+        bow = dictionary.doc2bow(row['text'].split())
+        topic_scores = model.get_document_topics(bow)
+        if topic_scores:
+            topic, score = max(topic_scores, key=lambda x: x[1])
+            topics.append(topic)
+            scores.append(score)
+        else:
+            topics.append(None)
+            scores.append(None)
+
     return topics, scores
     
 
