@@ -23,6 +23,15 @@ def compute_log_odds_ratios(a_counter, b_counter):
     log_odds_ratio = {}
     ####### PART A #######
     
+    a_total = a_counter.total()
+    b_total = b_counter.total()
+
+    for word in a_counter:
+        if word in b_counter:
+            a_freq = a_counter[word]
+            b_freq = b_counter[word]
+            log_odds_ratio[word] = math.log(a_freq / (a_total - a_freq)) - math.log(b_freq / (b_total - b_freq))
+
     return log_odds_ratio
 
 
@@ -44,7 +53,31 @@ def compute_odds_with_prior(counts1, counts2, prior):
     log_odds_ratio = {}
 
     ####### PART B #######
-   
+
+    a_total = counts1.total()
+    b_total = counts2.total()
+    p_total = prior.total()
+
+    words = set(counts1) | set(counts2) 
+
+    for word in words:
+        a_count = counts1[word]
+        b_count = counts2[word]
+        p_count = prior[word]
+
+        # omega computation
+        a_omega = (a_count + p_count) / (a_total + p_total - a_count - p_count)
+        b_omega = (b_count + p_count) / (b_total + p_total - b_count - p_count)
+
+        # delta computation
+        delta = math.log(a_omega) - math.log(b_omega)
+
+        # sigma computation
+        sigma = (1 / (a_count + p_count)) + (1 / (b_count + p_count))
+
+        # zeta computation
+        log_odds_ratio[word] = delta / math.sqrt(sigma)
+
     return log_odds_ratio
 
 
@@ -63,9 +96,27 @@ def smoother(A, window, count_list):
     new_counts    (List[collections.Counter]): a smoothed list of counters
     """ 
     new_counts = []
-    
+
     ####### PART C #######
     
+    prev = count_list[window - 1]
+    for i in range(window, len(count_list)):
+        smoothed = Counter()
+        words = set()
+        
+        for j in range(i - window, i):
+            words = words | set(count_list[j])
+        
+        for word in words:
+            total = 0
+            for j in range(i - window, i):
+                total += count_list[j][word]
+                    
+            smoothed[word] = A * total + (1 - A) * prev[word]
+            
+        prev = smoothed
+        new_counts.append(smoothed)
+
     return new_counts
             
 
