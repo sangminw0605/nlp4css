@@ -37,16 +37,12 @@ def assign_topics(model, dictionary, data):
     scores = []
     
     ####### PART A #######
-    for index, row in data.iterrows():
+    for _, row in data.iterrows():
         bow = dictionary.doc2bow(row['text'].split())
         topic_scores = model.get_document_topics(bow)
-        if topic_scores:
-            topic, score = max(topic_scores, key=lambda x: x[1])
-            topics.append(topic)
-            scores.append(score)
-        else:
-            topics.append(None)
-            scores.append(None)
+        topic, score = max(topic_scores, key=lambda x: x[1])
+        topics.append(topic)
+        scores.append(score)
 
     return topics, scores
     
@@ -94,7 +90,7 @@ if __name__ == "__main__":
     
     print()
     print("Changes over time in log odds with prior")
-    political_keywords = {w: [] for w in ['welfare', 'freedom', 'equality']}
+    political_keywords = {w: [] for w in ['abortion', 'justice', 'freedom']}
     for i, (d_counter, r_counter) in enumerate(zip(new_d_counters, new_r_counters)):
         w_to_ratio = compute_odds_with_prior(d_counter, r_counter, prior)
         for w, odds_list in political_keywords.items():
