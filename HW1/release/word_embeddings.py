@@ -84,36 +84,36 @@ def intersect_vocab (idx1, idx2):
   return common_vocab, (common_idx, common_iidx)
 
 
-def align_matrices (mat1, mat2, idx1, idx2):
-  """ Align the embedding matrices and their vocabularies.
+def align_matrices(mat1, mat2, idx1, idx2):
+    """Align the embedding matrices and their vocabularies.
 
-  Parameters:
-  ===========
-  mat1 (numpy.ndarray): embedding matrix for first group
-  mat2 (numpy.ndarray): embedding matrix for second group
+    Parameters:
+    ===========
+    mat1 (numpy.ndarray): embedding matrix for the first group
+    mat2 (numpy.ndarray): embedding matrix for the second group
+    idx1 (dict): the mapping dictionary for the first group
+    idx2 (dict): the mapping dictionary for the second group
 
-  index1 (dict): the mapping dictionary for first group
-  index2 (dict): the mapping dictionary for the second group
+    Returns:
+    ========
+    remapped_mat1 (numpy.ndarray): the aligned matrix for the first group
+    remapped_mat2 (numpy.ndarray): the aligned matrix for the second group
+    common_vocab (tuple): the mapping dictionaries for both matrices
+    """
+    common_vocab, (common_idx, common_iidx) = intersect_vocab(idx1, idx2)
+    row_nums1 = [idx1[v] for v in common_vocab]
+    row_nums2 = [idx2[v] for v in common_vocab]
 
-  Returns:
-  ========
-  remapped_mat1 (numpy.ndarray): the aligned matrix for first group
-  remapped_mat2 (numpy.ndarray): the aligned matrix for second group
-  common_vocab (tuple): the mapping dictionaries for both the matrices
-  """  
-  common_vocab, (common_idx, common_iidx) = intersect_vocab (idx1, idx2)
-  row_nums1 = [idx1[v] for v in common_vocab]
-  row_nums2 = [idx2[v] for v in common_vocab]
+    remapped_mat1 = mat1[row_nums1, :]
+    remapped_mat2 = mat2[row_nums2, :]
 
-  remapped_mat1 = mat1[row_nums1, :]
-  remapped_mat2 = mat2[row_nums2, :]
-  
-  ####### PART B #######
-  # use procrustes function here
-  rotated_mat2 = None
-  raise NotImplementedError()
+    # Apply Procrustes analysis
+    rotation_matrix = procrustes(remapped_mat1, remapped_mat2)
 
-  return remapped_mat1, rotated_mat2, (common_idx, common_iidx)
+    # Apply the rotation to the second group's embeddings
+    rotated_mat2 = remapped_mat2.dot(rotation_matrix)
+
+    return remapped_mat1, rotated_mat2, (common_idx, common_iidx)
 
 
 
@@ -123,6 +123,9 @@ if __name__ == "__main__":
     r_df = data_df[data_df.party == "R"]
     d_df = data_df[data_df.party == "D"]
     
+    r_texts = r_df['text'].apply(lambda t: t.split()).tolist()
+    d_texts = d_df['text'].apply(lambda t: t.split()).tolist()
+
     query = 'taxes'
     
     ####### PART A #######
@@ -132,7 +135,7 @@ if __name__ == "__main__":
     seed=42
     workers=16
     
-    r_model = None
+    r_model = r_model = Word2Vec(r_texts, window=window, min_count=min_count, seed=seed, workers=workers)
     r_embs, (r_idx, r_iidx) = w2v_to_numpy(r_model)
     print("PART A: #1")
     print("Republican near neighbors")
@@ -140,7 +143,8 @@ if __name__ == "__main__":
         print (nbor, sim)
     print()
 
-    d_model = None
+    d_model = Word2Vec(d_texts, window=window, min_count=min_count, seed=seed, workers=workers)
+
     d_embs, (d_idx, d_iidx) = w2v_to_numpy(d_model)
     print("Democrat near neighbors")
     for nbor, sim in near_neighbors(d_embs, query, d_idx, d_iidx, k=10):
