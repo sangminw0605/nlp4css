@@ -106,5 +106,3 @@ if __name__ == "__main__":
 
     pa = percent_agreement('Sangmin.csv', 'Sangmin.csv', 40, 4)
     print(fleiss_kappa(c1, c2, 40, pa))
-    # print('Percent agreement: ', percent_agreement(c1, c2, 40))
-    # print('Fleiss\'s agreement: ', fleiss_kappa(c1, c2, 40))
