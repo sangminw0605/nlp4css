@@ -86,7 +86,8 @@ def fleiss_kappa(c1, c2, total, p_ag):
 
         running = 0
         for entry in c1[key]:
-            running += (c1[key][entry] * c2[key][entry])
+            if entry in c2[key]:
+                running += (c1[key][entry] * c2[key][entry])
         
         percentages[key] = running / (total * total)
 
@@ -101,9 +102,9 @@ def fleiss_kappa(c1, c2, total, p_ag):
 
 
 if __name__ == "__main__":
-    c1, c2 = count('Sangmin.csv', 'Sangmin-2.csv')
+    c1, c2 = count('Sangmin-2.csv', 'sabrina_2.csv')
 
-    pa = percent_agreement('Sangmin.csv', 'Sangmin-2.csv', 40, 4)
+    pa = percent_agreement('Sangmin-2.csv', 'sabrina_2.csv', 40, 4)
 
     print('Percent agreement: ', pa)
     print('Cohen\'s Kappa: ', fleiss_kappa(c1, c2, 40, pa))
