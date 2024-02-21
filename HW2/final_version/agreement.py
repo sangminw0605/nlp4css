@@ -19,7 +19,6 @@ def percent_agreement(filename1, filename2, total, params):
                 percentages[entry] = 0
 
             for i in range(total):
-                running = 0
                 temp1, temp2 = next(reader1), next(reader2)
                 l1 = temp1[len(temp1) - params:]
                 l2 = temp2[len(temp2) - params:]
@@ -102,7 +101,9 @@ def fleiss_kappa(c1, c2, total, p_ag):
 
 
 if __name__ == "__main__":
-    c1, c2 = count('Sangmin.csv', 'Sangmin.csv')
+    c1, c2 = count('Sangmin.csv', 'Sangmin-2.csv')
 
-    pa = percent_agreement('Sangmin.csv', 'Sangmin.csv', 40, 4)
-    print(fleiss_kappa(c1, c2, 40, pa))
+    pa = percent_agreement('Sangmin.csv', 'Sangmin-2.csv', 40, 4)
+
+    print('Percent agreement: ', pa)
+    print('Cohen\'s Kappa: ', fleiss_kappa(c1, c2, 40, pa))
