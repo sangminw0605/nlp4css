@@ -112,7 +112,13 @@ def regress_y_on_z(data, maxiter=100):
     Outputs:
         Use .summary to print results (no return value)
     """
-    pass
+
+    #format data
+    #create OLS model
+    model = sm.OLS(data[:, 0], sm.add_constant(data[:, 1]))
+    
+    res = model.fit(method='pinv', maxiter=maxiter)
+    print(res.summary(yname='Y', xname=['const', 'Z' ]))
     
 
 def regress_y_on_z_and_u(data, maxiter=2000):
@@ -170,6 +176,7 @@ if __name__ == "__main__":
     print("\nEstimating the treatment effect by regressing Y on Z only\n")
     regress_y_on_z(data)
     
+    exit() 
     print("\n*******************************************************************************************")
     print("Estimating the treatment effect by regressing Y on Z and the confounder U\n")
     regress_y_on_z_and_u(data)
