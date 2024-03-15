@@ -193,14 +193,12 @@ def reweigh_with_propensity_scores(data, documents, vocabulary):
 
     # compute propensity scores using trained model for test set
     propensity_scores = model.predict_proba(vectorizer.fit_transform(docs_test))[:, 1]
-    print("Propensity scores: ", propensity_scores)
 
     # compute weights from propensity scores
     weights = np.where(data_test[:, 1] == 1, 1 / propensity_scores, 1 / (1 - propensity_scores))
-    print("Weights: ", weights)
 
     # compute ATE values
-    weighted_outcomes = data_test[:, 0] * weights
+    weighted_outcomes = data_test[:, 0] / weights
     adjusted_ATE = (np.mean(weighted_outcomes[data_test[:, 1] == 1]) - np.mean(weighted_outcomes[data_test[:, 1] == 0]))
 
     unadjusted_ATE = np.mean(data_test[data_test[:, 1] == 1, 0]) - np.mean(data_test[data_test[:, 1] == 0, 0])
