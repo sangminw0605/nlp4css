@@ -133,7 +133,7 @@ def regress_y_on_z_and_u(data, maxiter=2000):
     """
     #format data
     #create OLS model
-    model = sm.OLS(data[:, 0], sm.add_constant(np.column_stack((data[:,1], data[:,2]))))
+    model = sm.OLS(data[:, 0], sm.add_constant(np.column_stack((data[:, 1], data[:, 2]))))
     
     res = model.fit(method='pinv', maxiter=maxiter)
     print(res.summary(yname='Y', xname=['const', 'Z', 'U']))
@@ -152,7 +152,18 @@ def regress_y_on_z_and_topics(data, documents, vocabulary, num_topics=50, maxite
     Outputs:
         Use .summary to print results (no return value)
     """
-    pass
+    vectorizer = TfidfVectorizer(vocabulary=vocabulary)
+    X_text = vectorizer.fit_transform(documents)
+    
+    # Fit NMF model to obtain topic representations
+    nmf = NMF(n_components=num_topics)
+    topics_representation = nmf.fit_transform(X_text)
+    
+    # Create OLS model
+    model = sm.OLS(data[:, 0], sm.add_constant(np.column_stack((data[:, 1], topics_representation))))
+    
+    res = model.fit(method='pinv', maxiter=maxiter)
+    print(res.summary(yname='Y', xname=(['const', 'Z'] + [str(i) for i in range(num_topics)])))
     
 
 # Return the adjusted and unadjusted average treatment effect
@@ -185,12 +196,13 @@ if __name__ == "__main__":
     print("Estimating the treatment effect by regressing Y on Z and the confounder U\n")
     regress_y_on_z_and_u(data)
     
-    exit() 
-    
     print("\n*******************************************************************************************")
     print("Estimating the treatment effect by regressing Y on Z and the structured text\n")
     regress_y_on_z_and_topics(data, documents=documents, vocabulary=vocab, num_topics=20)
     
+    exit() 
+
+
     print("\n*******************************************************************************************")
     print("Estimating the treatment effect by weighting with propensity scores\n")
     unadjusted, adjusted = reweigh_with_propensity_scores(data, documents=documents, vocabulary=vocab)
