@@ -8,6 +8,7 @@ from sklearn.exceptions import ConvergenceWarning
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
+from sklearn.decomposition import LatentDirichletAllocation
 
 import statsmodels.api as sm
 
@@ -153,12 +154,15 @@ def regress_y_on_z_and_topics(data, documents, vocabulary, num_topics=50, maxite
         Use .summary to print results (no return value)
     """
     vectorizer = TfidfVectorizer(vocabulary=vocabulary)
-    X_text = vectorizer.fit_transform(documents)
     
     # Fit NMF model to obtain topic representations
     nmf = NMF(n_components=num_topics)
-    topics_representation = nmf.fit_transform(X_text)
+    topics_representation = nmf.fit_transform(vectorizer.fit_transform(documents))
     
+    # # LDA for part B
+    # lda = LatentDirichletAllocation(n_components=num_topics)
+    # topics_representation = lda.fit_transform(vectorizer.fit_transform(documents))
+
     # Create OLS model
     model = sm.OLS(data[:, 0], sm.add_constant(np.column_stack((data[:, 1], topics_representation))))
     
@@ -198,11 +202,8 @@ if __name__ == "__main__":
     
     print("\n*******************************************************************************************")
     print("Estimating the treatment effect by regressing Y on Z and the structured text\n")
-    regress_y_on_z_and_topics(data, documents=documents, vocabulary=vocab, num_topics=20)
+    regress_y_on_z_and_topics(data, documents=documents, vocabulary=vocab)
     
-    exit() 
-
-
     print("\n*******************************************************************************************")
     print("Estimating the treatment effect by weighting with propensity scores\n")
     unadjusted, adjusted = reweigh_with_propensity_scores(data, documents=documents, vocabulary=vocab)
