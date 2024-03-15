@@ -175,7 +175,6 @@ def reweigh_with_propensity_scores(data, documents, vocabulary):
     """Given the simulated data, documents, and vocab, reweigh
        the data with inverse probability weighting
 
-
     Args:
         data (np.array): simulated data
         documents: text data as returned by get_data
@@ -183,8 +182,31 @@ def reweigh_with_propensity_scores(data, documents, vocabulary):
     Outputs:
         return [unadjusted ATE], [adjusted ATE]
     """
-    pass
-    
+    # split the available data
+    docs_train, docs_test, data_train, data_test = train_test_split(documents, data, test_size=0.5)
+
+    # train regression model
+    vectorizer = TfidfVectorizer(vocabulary=vocabulary)
+    model = LogisticRegression(max_iter=2000)
+    # fit model
+    model.fit(vectorizer.fit_transform(docs_train), data_train[:, 1])
+
+    # compute propensity scores using trained model for test set
+    propensity_scores = model.predict_proba(vectorizer.fit_transform(docs_test))[:, 1]
+    print("Propensity scores: ", propensity_scores)
+
+    # compute weights from propensity scores
+    weights = np.where(data_test[:, 1] == 1, 1 / propensity_scores, 1 / (1 - propensity_scores))
+    print("Weights: ", weights)
+
+    # compute ATE values
+    weighted_outcomes = data_test[:, 0] * weights
+    adjusted_ATE = (np.mean(weighted_outcomes[data_test[:, 1] == 1]) - np.mean(weighted_outcomes[data_test[:, 1] == 0]))
+
+    unadjusted_ATE = np.mean(data_test[data_test[:, 1] == 1, 0]) - np.mean(data_test[data_test[:, 1] == 0, 0])
+
+    return unadjusted_ATE, adjusted_ATE
+
 
 if __name__ == "__main__":
     Z_bias = 0.05
@@ -192,7 +214,8 @@ if __name__ == "__main__":
     constant = -0.5
     data, documents, vocab = get_data(Z_bias=Z_bias, U_bias=U_bias, constant=constant)
     print(f"DATA: Y = {constant} + {Z_bias}*Z + {U_bias}*U")
-    
+
+    print(data[0])
     print("\nEstimating the treatment effect by regressing Y on Z only\n")
     regress_y_on_z(data)
     
@@ -203,7 +226,7 @@ if __name__ == "__main__":
     print("\n*******************************************************************************************")
     print("Estimating the treatment effect by regressing Y on Z and the structured text\n")
     regress_y_on_z_and_topics(data, documents=documents, vocabulary=vocab)
-    
+
     print("\n*******************************************************************************************")
     print("Estimating the treatment effect by weighting with propensity scores\n")
     unadjusted, adjusted = reweigh_with_propensity_scores(data, documents=documents, vocabulary=vocab)
