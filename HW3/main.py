@@ -213,7 +213,6 @@ if __name__ == "__main__":
     data, documents, vocab = get_data(Z_bias=Z_bias, U_bias=U_bias, constant=constant)
     print(f"DATA: Y = {constant} + {Z_bias}*Z + {U_bias}*U")
 
-    print(data[0])
     print("\nEstimating the treatment effect by regressing Y on Z only\n")
     regress_y_on_z(data)
     
