@@ -39,6 +39,9 @@ if __name__ == "__main__":
     print('distilbart-cnn-12-6-short.csv:')
     score('distilbart-cnn-12-6-short.csv')
 
+    print('distilbart-cnn-12-6.csv:')
+    score('distilbart-cnn-12-6.csv')
+
     print('gpt.csv:')
     score('gpt.csv')
 
