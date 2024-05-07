@@ -16,9 +16,10 @@ with open('SBIC.v2.agg.tst.csv', newline='') as csvfile:
         spamwriter = csv.writer(newfile, delimiter=',', quotechar='"')
 
         for row in spamreader:
-            if len(row) > stereoin and row[stereoin] != '[]':
+            if row[stereoin] != '[]':
                 i += 1
-                spamwriter.writerow([row[postin]] + [row[stereoin]])
+                print(row[postin].strip('\n'))
+                spamwriter.writerow([row[postin].strip('\n')] + [row[stereoin]])
 
                 if i == maxnum:
                     exit()
