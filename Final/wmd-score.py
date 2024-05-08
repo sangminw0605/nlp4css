@@ -1,8 +1,18 @@
-import numpy
-from wmd import WMD
+import gensim.downloader as api
 
-embeddings = numpy.array([[0.1, 1], [1, 0.1]], dtype=numpy.float32)
-nbow = {"first":  ("#1", [0, 1], numpy.array([1.5, 0.5], dtype=numpy.float32)),
-        "second": ("#2", [0, 1], numpy.array([0.75, 0.15], dtype=numpy.float32))}
-calc = WMD(embeddings, nbow, vocabulary_min=2)
-print(calc.nearest_neighbors("first"))
+def preprocess(sentence):
+    return [w for w in sentence.lower().split()]
+
+
+sentence_obama = "Toxic masculinity: drinking beer, objectifying women."
+sentence_president = "men need to prove themselves as manly"
+
+sentence_obama = preprocess(sentence_obama)
+sentence_president = preprocess(sentence_president)
+
+
+model = api.load('word2vec-google-news-300')
+
+distance = model.wmdistance(sentence_obama, sentence_president)
+
+print('distance = %.4f' % distance)
